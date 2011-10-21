@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="gbk" />
+<title>encodeComponent | http://omiga.org/</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta name="robots" content="all" />
+<meta name="author" content="wondger" />
+<style type="text/css">
+    .i_text{width:200px;}
+</style>
+</head>
+<body>
+    <h1>encodeComponent</h1>
+    <div class="form">
+        <input class="i_text" type="text" id="J_source" value="" />
+        <select id="J_type">
+            <option value="gbk">gbk</option>
+            <option value="utf8" selected>utf8</option>
+        </select>
+        <br />
+        <button class="btn" id="btn_encode">转 换</button>
+        <br />
+        <textarea type="text" id="J_out" value="" disabled cols="40" rows="10"></textarea>
+    </div>
+<script type="text/javascript">
+//<![CDATA[
+var EC = {
+    tid:'',
+    form:null,
+    iframe:null,
+    bind:function(obj,evt,fn){
+        if(obj.addEventListener){
+            obj.addEventListener(evt,function(){fn.call(obj)},false);
+            EC.addEvent = function(ele,evt,fn,index){
+                ele.addEventListener(evt,function(){fn.call(obj)},false);
+            };
+        }else if(obj.attachEvent){
+            obj.attachEvent('on'+evt,function(){fn.call(obj)},false);
+            EC.bind = function(ele,evt,fn,index){
+                ele.attachEvent('on'+evt,function(){fn.call(obj)},false);
+            };
+        }
+    },
+    createForm:function(src){
+        EC.tid = 'J_'+new Date().getTime();
+        var form = document.createElement('form');
+            form.target = EC.tid;
+            form.method = 'get';
+            form.style.display = 'none';
+        var input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'encode_source';
+            input.value = src;
+        EC.form = form;
+        form.appendChild(input);
+        document.body.appendChild(form);
+    },
+    createIframe:function(callback){
+        var iframe = document.createElement('iframe');
+            iframe.name = EC.tid;
+            iframe.src = "about:blank";
+            iframe.width = iframe.height = iframe.frameBorder = iframe.border = 0;
+            document.body.appendChild(iframe);
+            EC.iframe = iframe;
+            /*
+			if(self.frames[EC.tid] != undefined && self.frames[EC.tid].name != EC.tid){
+				//hack for ie 
+				self.frames[EC.tid].name = EC.tid; 
+			}
+             */
+            EC.bind(iframe,'load',function(){
+                callback.call(this,window.frames[EC.tid].location.href.split('encode_source=')[1]);
+            });
+    },
+    encode:function(src,callback,type){
+        var type = type ? (type.toLowerCase() == 'gbk' ? 'gbk' : 'utf8') : 'utf8';
+        if(type=='gbk'){
+            EC.createForm(src);
+            EC.createIframe(callback);
+            EC.form.submit();
+        }else{
+            callback.call(this,encodeURIComponent(src));
+        }
+    }
+};
+function $(id){return document.getElementById(id)};
+$('btn_encode').onclick = function(){
+    EC.encode($('J_source').value,function(out){$('J_out').value = out;},$('J_type').value);
+}
+//]]>
+</script>
+</body>
+</html>
